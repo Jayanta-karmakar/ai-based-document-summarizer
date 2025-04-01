@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: ai-summarizer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - minio
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/summarizer_db
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=password
+    restart: always
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    restart: always
+
+volumes:
+  mongo_data:
+  minio_data:
