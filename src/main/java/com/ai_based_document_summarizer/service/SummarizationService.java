@@ -1,6 +1,5 @@
 package com.ai_based_document_summarizer.service;
 
-import ai.djl.ModelException;
 import ai.djl.inference.Predictor;
 import ai.djl.ndarray.NDList;
 import ai.djl.repository.zoo.Criteria;
@@ -16,8 +15,6 @@ import com.ai_based_document_summarizer.repository.SummaryRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 /**
  * @author : jayantakarmakar
@@ -62,7 +59,6 @@ public class SummarizationService {
                         }
                     })
                     .build();
-
             this.model = ModelZoo.loadModel(criteria);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load model", e);
@@ -72,16 +68,19 @@ public class SummarizationService {
     public String summarize(String text) {
         try (Predictor<String, String> predictor = model.newPredictor()) {
             String summarizedText = predictor.predict("summarize: " + text);
-
-            Summary summary = new Summary();
-            summary.setOriginalText(text);
-            summary.setSummarizedText(summarizedText);
-            summaryRepository.save(summary);
-
+            // Save the summary to the database
+            saveSummary(text, summarizedText);
             return summarizedText;
         } catch (TranslateException e) {
             throw new RuntimeException("Summarization failed", e);
         }
+    }
+
+    private void saveSummary(String text, String summarizedText) {
+        Summary summary = new Summary();
+        summary.setOriginalText(text);
+        summary.setSummarizedText(summarizedText);
+        summaryRepository.save(summary);
     }
 }
 

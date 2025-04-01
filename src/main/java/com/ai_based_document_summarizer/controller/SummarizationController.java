@@ -18,8 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/summarize")
 public class SummarizationController {
 
+    private final SummarizationService summarizationService;
+
     @Autowired
-    private SummarizationService summarizationService;
+    public SummarizationController(SummarizationService summarizationService) {
+        this.summarizationService = summarizationService;
+    }
 
     @PostMapping
     public ResponseEntity<String> summarizeText(@RequestBody String text) {
